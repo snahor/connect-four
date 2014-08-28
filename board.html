@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    table {
+      border: 2px solid black;
+    }
+    td { 
+      height: 50px;
+      width: 50px;
+      border: 1px solid gray;
+    }
+  </style>
+</head>
+<body>
+  <table>
+    <tbody>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script>
+(function ($) {
+  function Game(turn, board, color, $table) {
+    this.turn = turn;
+    this.board = board;
+    this.color = color;
+    this.ROWS = 6;
+    this.COLUMNS = 7;
+    this.$table = $table;
+    this.colors = ['red', 'blue'];
+    this.winner = null;
+    this.isRunning = null;
+  }
+
+  Game.prototype.isValidMove = function(row, column) {
+    return true;
+  }
+
+  Game.prototype.undoMove = function ($cell) {
+    $cell.css('backgroundColor', 'white')
+  }
+
+  Game.prototype.makeMove = function ($cell) {
+    var column = $cell.index();
+    var row = $cell.parent().index();
+
+    if (this.isValidMove(row, column)) {
+      $cell.css('backgroundColor', '{{ color }}')
+
+      $.ajax({
+        type: 'POST',
+        url: '/user/{{ turn + 1 }}/move',
+        data: { row: +row, column: +column },
+        dataType: 'json',
+        success: function (data) {
+          game.board = data.board;
+          /*
+          console.log('success')
+          if ( data.winner ) {
+            if ( data.winner == {{ turn }})
+              alert('You are the winner!');
+            else
+              alert('Shame on you, LOSER!');
+          }
+          */
+        },
+        error: function (data) {
+          if ( data.status == 400 ) {
+            alert(data.responseJSON.error)
+            game.undoMove($cell);
+          }
+          else {
+            alert("There was an server error.")
+          }
+        }
+      });
+    }
+  }
+
+  Game.prototype.draw = function () {
+    var self = this;
+    $('tr', this.$table).each(function (rowIndex) {
+      $('td', this).each(function (colIndex) {
+        var cell = self.board[rowIndex][colIndex];
+        $(this).css('backgroundColor', (cell !== null) ? self.colors[cell] : 'white');
+      });
+    });
+  }
+
+  Game.prototype.start = function () {
+    console.log('turn', this.turn, 'colors', this.colors)
+    this.draw();
+    this.isRunning = true;
+    var self = this;
+
+    this.interval = setInterval(function() {
+      $.get('/state', function (data) {
+        self.board = data.board;
+        self.winner = data.winner;
+        self.draw();
+        if ( data.winner !== null ) {
+          clearInterval(self.interval);
+          alert('Player ' + (self.winner + 1) + ' is the winner.')
+        }
+      });
+    }, 1000);
+  }
+
+  var game = new Game({{ turn }}, {{ board }}, '{{ color }}', $('table'));
+  game.start();
+
+  $('td').click(function () {
+    game.makeMove($(this));
+  })
+
+
+})($);
+
+
+
+  </script>
+</body>
+</html>
