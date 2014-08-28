@@ -15,6 +15,7 @@
   </style>
 </head>
 <body>
+  <button id="restart">Restart</button>
   <table>
     <tbody>
       <tr>
@@ -144,7 +145,6 @@
   }
 
   Game.prototype.start = function () {
-    console.log('turn', this.turn, 'colors', this.colors)
     this.draw();
     this.isRunning = true;
     var self = this;
@@ -162,6 +162,16 @@
     }, 1000);
   }
 
+  Game.prototype.restart = function () {
+    var self = this;
+
+    $.get('/restart', function (data) {
+      self.board = data.board;
+      self.winner = null;
+      self.start();
+    });
+  }
+
   var game = new Game({{ turn }}, {{ board }}, '{{ color }}', $('table'));
   game.start();
 
@@ -169,10 +179,13 @@
     game.makeMove($(this));
   })
 
-
+  $('#restart').click(function () {
+    var answer = confirm('This will restart the game for both you and your opponent, are you sure?');
+    if ( answer ) {
+      game.restart();
+    }
+  })
 })($);
-
-
 
   </script>
 </body>

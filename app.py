@@ -56,9 +56,10 @@ def game_state():
     })
 
 
-@route('/user/<turn:re:[1,2]>/restart')
-def restart(turn):
+@route('/restart')
+def restart():
     game.restart()
+    return game_state()
 
 
 run(host='localhost', port=8888, debug=True, reloader=True)
