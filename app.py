@@ -18,6 +18,7 @@ def _json(data, status=200):
 
 
 @route('/user/<turn:re:[1,2]>')
+@route('/users/<turn:re:[1,2]>')
 def index(turn):
     colors = ['red', 'blue']
     turn = int(turn) - 1
@@ -30,6 +31,7 @@ def index(turn):
 
 
 @post('/user/<turn:re:[1,2]>/move')
+@post('/users/<turn:re:[1,2]>/move')
 def move(turn):
     turn = int(turn) - 1
 
