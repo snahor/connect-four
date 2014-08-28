@@ -1,6 +1,3 @@
-import pprint
-
-
 class Game(object):
     ROWS = 6
     COLUMNS = 7
@@ -12,6 +9,17 @@ class Game(object):
         self.board = board
         self.turn = turn
         self.winner = None
+
+    def __str__(self):
+        text = []
+        line = '+---+---+---+---+---+---+---+'
+        for row in self.board:
+            text.append(line)
+            rep = '| %s | %s | %s | %s | %s | %s | %s |'
+            text.append(
+                rep % tuple((i if i is not None else ' ') for i in row))
+        text.append(line)
+        return '\n'.join(text)
 
     def is_over(self):
         return self.winner is not None or self.board_is_full()
@@ -47,32 +55,40 @@ class Game(object):
                 ):
                     return True
 
-        # diagonal
-        for i in range(self.COLUMNS - 3):
-            for j in range(3, self.ROWS):
+        # diagonal \
+        for i in range(Game.ROWS - 3):
+            for j in range(self.COLUMNS - 3):
                 if (
-                    board[i][j] == board[i + 1][j - 1] == turn and
-                    board[i + 2][j - 2] == board[i + 3][j - 3] == turn
-                ) or (
                     board[i][j] == board[i + 1][j + 1] == turn and
                     board[i + 2][j + 2] == board[i + 3][j + 3] == turn
                 ):
                     return True
 
+        # diagonal /
+        for i in range(Game.ROWS - 3):
+            for j in range(self.COLUMNS - 1, 2, -1):
+                if (
+                    board[i][j] == board[i + 1][j - 1] == turn and
+                    board[i + 2][j - 2] == board[i + 3][j - 3] == turn
+                ):
+                    return True
+
         return False
 
-    def is_valid_move(self, row, column):
+    def is_valid_move(self, column):
         return (
-            0 <= row < self.ROWS and
             0 <= column < self.COLUMNS and
-            self.board[row][column] is None
+            self.board[0][column] is None
         )
 
-    def make_move(self, row, column):
-        if not self.is_valid_move(row, column):
+    def make_move(self, column):
+        if not self.is_valid_move(column):
             raise ValueError('Invalid move')
 
-        self.board[row][column] = self.turn
+        for i in reversed(range(self.ROWS)):
+            if self.board[i][column] is None:
+                self.board[i][column] = self.turn
+                break
 
         if self.habemus_victor():
             self.winner = self.turn
@@ -84,22 +100,22 @@ class Game(object):
 
     def play(self):
         def ask():
-            row = int(raw_input('row: '))
-            col = int(raw_input('col: '))
-            return row, col
+            col = int(raw_input('Column: '))
+            return col
 
         while not self.is_over():
-            pprint.pprint(self.board)
+            print(self)
             try:
-                self.make_move(*ask())
-            except Exception as exc:
+                self.make_move(ask())
+            except Exception:
                 print 'Invalid move'
-                print exc
-                self.make_move(*ask())
+                self.make_move(ask())
             self.next_turn()
 
-        print 'winner', self.winner
-
+        if self.winner:
+            print('The winner is player: %s' % self.winner)
+        else:
+            print("Cat's game")
 
 def main():
     game = Game()
