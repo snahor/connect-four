@@ -39,10 +39,7 @@ def move(turn):
         return error("You can't make a move, wait for your opponent.")
 
     try:
-        game.make_move(
-            row=int(request.forms.get('row')),
-            column=int(request.forms.get('column'))
-        )
+        game.make_move(int(request.forms.get('column')))
         game.next_turn()
         return game_state()
     except ValueError as exc:

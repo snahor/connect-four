@@ -11,6 +11,7 @@
       height: 50px;
       width: 50px;
       border: 1px solid gray;
+      border-radius: 50%;
     }
   </style>
 </head>
@@ -89,7 +90,7 @@
     this.isRunning = null;
   }
 
-  Game.prototype.isValidMove = function(row, column) {
+  Game.prototype.isValidMove = function(column) {
     return true;
   }
 
@@ -99,15 +100,14 @@
 
   Game.prototype.makeMove = function ($cell) {
     var column = $cell.index();
-    var row = $cell.parent().index();
 
-    if (this.isValidMove(row, column)) {
+    if (this.isValidMove(column)) {
       $cell.css('backgroundColor', '{{ color }}')
 
       $.ajax({
         type: 'POST',
-        url: '/user/{{ turn + 1 }}/move',
-        data: { row: +row, column: +column },
+        url: '/users/{{ turn + 1 }}/move',
+        data: { column: +column },
         dataType: 'json',
         success: function (data) {
           game.board = data.board;
@@ -127,7 +127,7 @@
             game.undoMove($cell);
           }
           else {
-            alert("There was an server error.")
+            alert("There was an error.")
           }
         }
       });
